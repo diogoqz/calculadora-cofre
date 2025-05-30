@@ -13,28 +13,28 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
 
     - name: Setup Java JDK
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution: 'adopt'
+        distribution: 'temurin'
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
+      uses: android-actions/setup-android@v3
 
     - name: Install dependencies
       run: npm install
 
     - name: Cache Gradle dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -46,30 +46,34 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
 
+    - name: Clean build
+      run: |
+        cd android
+        ./gradlew clean
+
     - name: Build APK
       run: |
         cd android
-        ./gradlew assembleRelease
+        ./gradlew assembleRelease --no-daemon --stacktrace
 
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: calculadora-cofre-apk
         path: android/app/build/outputs/apk/release/app-release.apk
+        if-no-files-found: error
 
     - name: Create Release
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
-        release_name: Calculadora Cofre v${{ github.run_number }}
+        name: Calculadora Cofre v${{ github.run_number }}
         body: |
           🔐 **Calculadora Cofre APK**
           
           ### Como usar:
-          1. Baixe o APK
+          1. Baixe o APK abaixo
           2. Instale no seu dispositivo Android
           3. Use como calculadora normal
           4. Digite **2580** para acessar o cofre
@@ -80,16 +84,8 @@ jobs:
           
           **Versão:** ${{ github.run_number }}
           **Commit:** ${{ github.sha }}
+        files: android/app/build/outputs/apk/release/app-release.apk
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: android/app/build/outputs/apk/release/app-release.apk
-        asset_name: calculadora-cofre.apk
-        asset_content_type: application/vnd.android.package-archive 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
