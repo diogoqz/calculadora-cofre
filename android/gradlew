@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+DEFAULT_JVM_OPTS="-Xmx2048m -Xms512m"
+APP_HOME="$(cd "$(dirname "$0")" && pwd)"
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+# Find java
+if [ -n "$JAVA_HOME" ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+else
+    JAVACMD="java"
+fi
+
+# Check if java exists
+if ! command -v "$JAVACMD" >/dev/null 2>&1; then
+    echo "ERROR: Java not found. Please install Java JDK."
+    exit 1
+fi
+
+# Execute Gradle
+exec "$JAVACMD" $DEFAULT_JVM_OPTS -cp "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

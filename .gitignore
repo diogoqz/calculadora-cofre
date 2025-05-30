@@ -13,9 +13,6 @@ yarn-error.log
 android/app/build/
 android/build/
 android/.gradle/
-android/gradle/
-android/gradlew
-android/gradlew.bat
 android/local.properties
 android/app/debug.keystore
 *.keystore
